@@ -1,5 +1,5 @@
 # requirements
-** the following packages must be installed for fftool to work:**
+**the following packages must be installed for fftool to work:**
 
 BeautifulSoup
 
