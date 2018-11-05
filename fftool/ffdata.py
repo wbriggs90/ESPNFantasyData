@@ -20,7 +20,7 @@ status
 teams/pendingMoveBatches X
 tweets
 stories
-livescoring (doesn’t seem to be working right)
+livescoring
 boxscore x
 
 """
