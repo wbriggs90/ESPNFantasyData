@@ -2,7 +2,7 @@
 """
 Created on Sun Sep 16 10:01:09 2018
 
-@author: old pc
+@author: Will Briggs
 endpoints:
     
 leagueSettings
@@ -28,7 +28,7 @@ import requests
 import datetime
 from bs4 import BeautifulSoup
 import pandas as pd
-
+from fftool import teams as tm
 
  
 
@@ -37,7 +37,10 @@ class privateLeague():
     
     to change year use the setyear function'''
     
-    slotvalues = {20:"BENCH", 0:'QB', 2:'RB', 4:'WR', 6:'TE', 23:'FLEX', 16:'DEF', 17:'KICKER'}
+    slotnames = {20:"BENCH", 0:'QB', 2:'RB', 4:'WR', 6:'TE', 23:'FLEX', 16:'DEF', 17:'KICKER'}
+    slotvalues = {slotnames[20]:20,slotnames[2]:2,slotnames[4]:4,slotnames[6]:6,
+                  slotnames[23]:23,slotnames[16]:16,slotnames[17]:17}
+    
     teams = {}
       
     def __init__(self, league_id, espn_s2, swid):
@@ -61,7 +64,7 @@ class privateLeague():
                 teamAbbrev = team['team']['teamAbbrev']
                 teamId = team['team']['teamId']
                 teamName = team['team']['teamNickname']
-                self.teams[teamAbbrev] = teams.team(teamName,teamId,teamAbbrev)
+                self.teams[teamAbbrev] = tm.team(teamName,teamId,teamAbbrev)
                 for player in team['slots']:
                     firstname = player['player']['firstName']
                     lastname = player['player']['lastName']
@@ -179,16 +182,17 @@ class privateLeague():
                     print(player['player']['firstName'],
                           ' ',
                           player['player']['lastName'],
-                          self.slotvalues[player['slotCategoryId']])
+                          self.slotnames[player['slotCategoryId']])
                 
 
     def printMyRoster(self,week):
-        for team in self.getRosterInfo(1)['leagueRosters']['teams']:
+        for team in self.getRosterInfoData(1)['leagueRosters']['teams']:
             print(team['team']['teamAbbrev'])
+            print(team)
             for player in team['slots']:
                 print('%s %s %s' %(player['player']['firstName'],
                                    player['player']['lastName'],
-                                   self.slotvalues[player['slotCategoryId']]))
+                                   self.slotnames[player['slotCategoryId']]))
 
 
     def getRosterInfoData(self, week):
@@ -271,7 +275,7 @@ class privateLeague():
         freeagents = self.getFreeAgent(17)
         return freeagents
     
-    def getRankings(self, slot=None, avail=2):
+    def getRankings(self, slot=None, avail=1):
         '''
         this function is a mess
         avail:
@@ -291,10 +295,16 @@ class privateLeague():
         soup = BeautifulSoup(rankings.content, 'html.parser')
         data = soup.find('table', class_='playerTableTable')
         rankings = pd.read_html(str(data), header=0, skiprows=1, flavor='bs4' )[0]
+        '''
+        the below lines attempt to split up the player team pos column which contains the player team positions and status.  
+        I have been unable to make this code accept all different inputs. 
+        for isntance some players have multiple positions and some may not hvae a status
         
         rankings[['Player' ,'team position']] = rankings['PLAYER, TEAM POS'].str.split(', ', n=1, expand=True)
         rankings['team position'].fillna('Defense',inplace=True)
         rankings[['Team','position status']] = rankings['team position'].str.split('\s+', n=1, expand=True)
+        rankings['position status'].fillna('Defense',inplace=True)
+        #print(rankings)
         try:
             rankings[['Position','Position 2']] = rankings['position status'].str.split(', ', n=1, expand=True)
             rankings[['Position 2','Status']] = rankings['Position 2'].str.split('\s+', n=1, expand=True)
@@ -310,14 +320,41 @@ class privateLeague():
             rankings.drop(['Unnamed: 1','ACTION','OPP',
                        'STATUS ET','Unnamed: 7','Unnamed: 4',
                        'team position','position status'], axis=1,inplace=True)
-        rankings = rankings[rankings['Status']!='IR']    
+        rankings = rankings[rankings['Status']!='IR']
+        '''
+        rankings.drop(['Unnamed: 1','ACTION','OPP','STATUS ET',
+                       'Unnamed: 7','Unnamed: 4'], axis=1,inplace=True)
+    
         rankings.replace('--', '51', inplace=True)
         
-        cols = ['KARABELL','YATES','COCKCROFT','CLAY','BELL']
+        cols = ['BERRY','KARABELL','YATES','COCKCROFT','CLAY','BELL']
 
         rankings[cols] = rankings[cols].apply(pd.to_numeric, errors='coerce')
         rankings['AVERAGE'] = rankings[cols].mean(axis=1)
         rankings.sort_values('AVERAGE',ascending=True,inplace=True)
-        
+        rankings.reset_index(drop=True,inplace=True)
         
         return rankings
+    
+    def myRankings(self):
+        '''
+        this function returns rankings for all players on your team
+        '''
+        data = pd.DataFrame()
+        for slotid in self.slotnames:
+            slotdata = self.getRankings(slotid,avail=4)
+            slotdata['slotid']= slotid
+            slotdata = slotdata[slotdata['TYPE']=='BRIG']
+            data = data.append(slotdata,)
+        return data
+            
+        
+    def WWMBD(self):
+        '''
+        What Would Matt Berry Do?
+        '''
+        
+        data = self.getRankings()
+        data.sort_values('BERRY',ascending=True,inplace=True)
+        data.reset_index(drop=True, inplace=True)
+        print(data)
