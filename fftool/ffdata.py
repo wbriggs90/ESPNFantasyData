@@ -3,25 +3,7 @@
 Created on Sun Sep 16 10:01:09 2018
 
 @author: Will Briggs
-endpoints:
-    
-leagueSettings
-playerInfo x
-scoreboard
-player/news X
-recentActivity
-leagueSchedules
-teams x
-rosterInfo x
-schedule
-polls
-messageboard
-status
-teams/pendingMoveBatches X
-tweets
-stories
-livescoring
-boxscore x
+
 
 """
 import requests
@@ -38,8 +20,9 @@ class privateLeague():
     to change year use the setyear function'''
     
     slotnames = {20:"BENCH", 0:'QB', 2:'RB', 4:'WR', 6:'TE', 23:'FLEX', 16:'DEF', 17:'KICKER'}
-    slotvalues = {slotnames[20]:20,slotnames[2]:2,slotnames[4]:4,slotnames[6]:6,
-                  slotnames[23]:23,slotnames[16]:16,slotnames[17]:17}
+    slotvalues = {}
+    for slotid in slotnames:
+        slotvalues[slotnames[slotid]]=slotid
     
     teams = {}
       
@@ -54,6 +37,7 @@ class privateLeague():
         self.scoreboard = [None] * 16
         self.rosters = {}
         self.teams = {}
+        self.rosterFormat = {}
 
     def getTeams(self,week):
         for matchup in self.getScoreboardData(week)[week]['scoreboard']['matchups']:
@@ -95,9 +79,6 @@ class privateLeague():
         
         return data
     
-
-    
-
     def getScoreboardData(self, week):
         '''get the scoreboard endpoint data
         this is empty when it comes from ESPN'''
@@ -110,7 +91,17 @@ class privateLeague():
         
         return self.scoreboard
 
-
+    def getLeagueSettingsData(self, week):
+        '''get the scoreboard endpoint data
+        this is empty when it comes from ESPN'''
+        
+        leaguesettings = requests.get(self.apipath + 'leagueSettings',
+                            params=self.parameters, 
+                            cookies=self.cookies)
+        
+        self.leaguesettings = leaguesettings.json()
+        
+        return self.leaguesettings
 
 
 
@@ -347,14 +338,25 @@ class privateLeague():
             slotdata = slotdata[slotdata['TYPE']=='BRIG']
             data = data.append(slotdata,)
         return data
+    
+    def getRosterFormat(self):
+        data = self.getLeagueSettingsData(1)
+        for slot in data['leaguesettings']['slotCategoryItems']:
+            if slot['num']==0 or slot['slotCategoryId']==20:
+                continue
+            else:
+                self.rosterFormat[slot['slotCategoryId']]=slot['num']
             
+        print(self.rosterFormat)
+            
+        
         
     def WWMBD(self):
         '''
         What Would Matt Berry Do?
         '''
-        
-        data = self.getRankings()
-        data.sort_values('BERRY',ascending=True,inplace=True)
-        data.reset_index(drop=True, inplace=True)
-        print(data)
+        for slotid in self.rosterFormat:
+            data = self.getRankings(slot=slotid)
+            data.sort_values('BERRY',ascending=True,inplace=True)
+            data.reset_index(drop=True, inplace=True)
+            print(data)

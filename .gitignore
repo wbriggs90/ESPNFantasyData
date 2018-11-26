@@ -102,3 +102,4 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+Test Scripts/fftest.py
