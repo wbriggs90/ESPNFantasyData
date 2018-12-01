@@ -335,7 +335,7 @@ class privateLeague():
         '''
         prints all rosters for all teams in the league
         '''
-       for matchup in self.getScoreboardData(week)[week]['scoreboard']['matchups']:
+        for matchup in self.getScoreboardData(week)[week]['scoreboard']['matchups']:
             teamId = matchup['teams'][0]['teamId']
             BS = self.getTeamBoxScoreData(week,teamId)
             for team in BS['boxscore']['teams']:
