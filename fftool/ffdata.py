@@ -332,6 +332,9 @@ class privateLeague():
         return self.rosterFormat
     
     def printAllRosters(self, week):
+        '''
+        prints all rosters for all teams in the league
+        '''
        for matchup in self.getScoreboardData(week)[week]['scoreboard']['matchups']:
             teamId = matchup['teams'][0]['teamId']
             BS = self.getTeamBoxScoreData(week,teamId)
