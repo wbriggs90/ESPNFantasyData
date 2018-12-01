@@ -191,7 +191,7 @@ class privateLeague():
         data = data.json()
         
         return data
-    
+     
     #%% FREE AGENT STUFF
     def getFreeAgent(self,slot):
         ''' gets the current available free agents for given slot id
