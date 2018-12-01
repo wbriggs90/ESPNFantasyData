@@ -336,22 +336,29 @@ class privateLeague():
             teamId = matchup['teams'][0]['teamId']
             BS = self.getTeamBoxScoreData(week,teamId)
             for team in BS['boxscore']['teams']:
+                print()
                 print(team['team']['teamAbbrev'])
                 for player in team['slots']:
-                    print(player['player']['firstName'],
-                          ' ',
-                          player['player']['lastName'],
-                          self.slotnames[player['slotCategoryId']])
-                
+                    try:
+                        print(player['player']['firstName'],
+                              ' ',
+                              player['player']['lastName'],
+                              self.slotnames[player['slotCategoryId']])
+                    except:
+                        print("EMPTY")
+                    
 
     def printMyRoster(self,week):
         for team in self.getRosterInfoData(1)['leagueRosters']['teams']:
             print(team['team']['teamAbbrev'])
-            print(team)
+#            print(team)
             for player in team['slots']:
-                print('%s %s %s' %(player['player']['firstName'],
+                try:
+                    print('%s %s %s' %(player['player']['firstName'],
                                    player['player']['lastName'],
                                    self.slotnames[player['slotCategoryId']]))
+                except:
+                    print("EMPTY")
             
     def WWMBD(self):
         '''
