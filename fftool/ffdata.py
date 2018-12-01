@@ -349,6 +349,10 @@ class privateLeague():
                     
 
     def printMyRoster(self,week):
+        '''
+        prints your roster duh
+        '''
+        
         for team in self.getRosterInfoData(1)['leagueRosters']['teams']:
             print(team['team']['teamAbbrev'])
 #            print(team)
