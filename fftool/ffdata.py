@@ -129,8 +129,7 @@ class privateLeague():
         
         self.boxscore = boxscore.json()
         
-        return self.boxscore
-        
+        return self.boxscore   
     
     def getPlayerInfoData(self, week):
         '''get the playerInfo endpoint data'''
@@ -153,8 +152,6 @@ class privateLeague():
         self.teams = self.teams.json()
         
         return self.teams
-    
-
 
     def getRosterInfoData(self, week):
         ''' get the rosterInfo endpoint data'''
@@ -349,8 +346,8 @@ class privateLeague():
                               self.slotnames[player['slotCategoryId']])
                     except:
                         print("EMPTY")
-                    
-
+         
+            
     def printMyRoster(self,week):
         '''
         prints your roster duh
